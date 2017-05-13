@@ -3,6 +3,7 @@ from os import listdir
 from os.path import isfile, join
 import xml.etree.ElementTree as ET
 import sys
+import csv
 
 
 reload(sys)
@@ -14,6 +15,25 @@ conn.execute("CREATE TABLE IF NOT EXISTS Institution(aid INT, instName VARCHAR(2
 conn.execute("CREATE TABLE IF NOT EXISTS Investigator(aid INT, name VARCHAR(250), email VARCHAR(250), PRIMARY KEY (aid, name, email))")
 conn.commit()
 
+def exportDBToCSV():
+    curs = conn.cursor()
+    curs.execute("SELECT * FROM Award")
+    with open('Award.csv', 'wb') as f:
+        writer = csv.writer(f)
+        writer.writerow(["aid","amount","title","year","startdate","enddate","dir","div"])
+        writer.writerows(curs.fetchall())
+    curs.execute("SELECT * FROM Institution")
+    with open('Institution.csv', 'wb') as f:
+        writer = csv.writer(f)
+        writer.writerow(["aid", "instName", "address"])
+        writer.writerows(curs.fetchall())
+    curs.execute("SELECT * FROM Investigator")
+    with open('Investigator.csv', 'wb') as f:
+        writer = csv.writer(f)
+        writer.writerow(["aid", "name", "email"])
+        writer.writerows(curs.fetchall())
+    curs.close()
+
 def insertAwardsXML():
     onlyfiles = [join("datasets/awards/", f) for f in listdir("datasets/awards/") if isfile(join("datasets/awards/", f))]
     for f in onlyfiles:
@@ -23,8 +43,8 @@ def insertAwardsXML():
             award = tree.getroot().find("Award")
             aid = award.find("AwardID").text
             startDate = award.find("AwardEffectiveDate").text
-            division = award.find("Organization").find("Division").find("LongName").text
-            directorate = award.find("Organization").find("Directorate").find("LongName").text
+            division = getAcroynm(award.find("Organization").find("Division").find("LongName").text)
+            directorate = getAcroynm(award.find("Organization").find("Directorate").find("LongName").text)
             insertAward(aid, award.find("AwardAmount").text, award.find("AwardTitle").text, startDate[-4:], startDate, award.find("AwardExpirationDate").text, division, directorate)
 
             instit = award.find("Institution")
@@ -60,4 +80,31 @@ def insertInvestigator(aid, name, email):
     conn.execute(query)
     conn.commit()
 
+# For the director and division attributes
+# Prefix is ignored, and the first letter of each word is returned (except ands, ofs, for, Direct, Directorate, Div, Division)
+def getAcroynm(label):
+    if(label == None):
+        return None
+    words = label.split(" ")
+    if(label.isupper()):
+        return label
+    acroynm = ""
+    for w in words:
+        if(w.upper() != "OF" and w.upper() != "AND" and w.upper() != "FOR" and w.upper() != "DIRECT" and w.upper() != "DIRECTORATE" and w.upper() != "DIV" and w.upper() != "DIVISION" and w[0].isalpha()):
+            acroynm += w[0]
+
+    if (acroynm == "E"):
+        acroynm = "ENG"
+    elif (acroynm == "P"):
+        acroynm = "PHYS"
+    elif(acroynm == "C"):
+        acroynm = "CHEM"
+    elif(acroynm == "G"):
+        acroynm = "GEO"
+    elif(acroynm == "B"):
+        acroynm = "BD"  #Budget division
+
+    return acroynm
+
 insertAwardsXML()
+#exportDBToCSV()
