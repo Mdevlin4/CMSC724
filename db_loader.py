@@ -45,7 +45,7 @@ def insertAwardsXML():
             startDate = award.find("AwardEffectiveDate").text
             division = getAcroynm(award.find("Organization").find("Division").find("LongName").text)
             directorate = getAcroynm(award.find("Organization").find("Directorate").find("LongName").text)
-            insertAward(aid, award.find("AwardAmount").text, award.find("AwardTitle").text, startDate[-4:], startDate, award.find("AwardExpirationDate").text, division, directorate)
+            insertAward(aid, award.find("AwardAmount").text, award.find("AwardTitle").text, startDate[-4:], startDate, award.find("AwardExpirationDate").text, directorate, division)
 
             instit = award.find("Institution")
 
@@ -107,4 +107,4 @@ def getAcroynm(label):
     return acroynm
 
 insertAwardsXML()
-#exportDBToCSV()
+exportDBToCSV()
