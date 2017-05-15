@@ -62,7 +62,7 @@ def insertAwardsXML():
             print("Parse error!")
 
 def insertAward(aid, amount, title, year, startdate, enddate, dir, div):
-    query = "INSERT INTO Award(aid, amount, title, year, startdate, enddate, dir, div) VALUES (" + str(aid) + "," + str(amount) + ",\"" + str(title).replace('"',"'") + "\"," + str(year) + "," + str(startdate) + "," + str(enddate) + ",\"" + str(dir).replace('"',"'") + "\",\"" + str(div).replace('"',"'") + "\")"
+    query = "INSERT INTO Award(aid, amount, title, year, startdate, enddate, dir, div) VALUES (" + str(aid) + "," + str(amount) + ",\"" + str(title).replace('"',"'") + "\"," + str(year) + ",\"" + str(startdate) + "\",\"" + str(enddate) + "\",\"" + str(dir).replace('"',"'") + "\",\"" + str(div).replace('"',"'") + "\")"
     #print(query)
     conn.execute(query)
     conn.commit()
@@ -106,5 +106,5 @@ def getAcroynm(label):
 
     return acroynm
 
-insertAwardsXML()
+#insertAwardsXML()
 exportDBToCSV()
